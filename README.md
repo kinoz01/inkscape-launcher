@@ -1,5 +1,3 @@
-# Inkscape Helper Makefile
-
 This bundle ships Inkscape’s AppImage alongside a few helper targets to launch it
 and manage fonts without needing system-wide installs.
 
