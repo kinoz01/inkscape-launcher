@@ -12,8 +12,6 @@ RUN_TARGETS := $(notdir $(RUN_FILES))
 
 .PHONY: install-fonts inkscape fonts $(RUN_TARGETS)
 
-fonts: install-fonts
-
 inkscape:
 	@if [ ! -x "$(INKSCAPE_APP)" ]; then \
 		echo "Cannot execute '$(INKSCAPE_APP)'. Make sure the AppImage is present and executable."; \
