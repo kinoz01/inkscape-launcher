@@ -5,10 +5,14 @@ and manage fonts without needing system-wide installs.
 
 - `make inkscape` — runs `AppRun`, forwarding optional `ARGS=...` if you want
   to pass CLI flags such as `ARGS="--verb=FileQuit"`.
-- `make install-fonts` (or `make fonts`) — copies every `.otf/.ttf/.ttc` inside
-  `fonts/` into `~/.local/share/fonts` (override with
+- `make fonts` — copies every `.otf/.ttf/.ttc` inside `fonts/` into
+  `~/.local/share/fonts` (override with
   `FONT_INSTALL_DIR=/path`) and refreshes `fc-cache`. Re-running only installs
   newly added or changed files.
+- `make install` — installs a `.desktop` launcher (defaulting to
+  `~/.local/share/applications/inkscape-appimage.desktop`, configurable through
+  `APPLICATIONS_DIR` or `DESKTOP_INSTALL_PATH`) that points to this bundle’s
+  AppImage and icon, then refreshes the desktop database if available.
 - `make <file>` — for any file under `run/`, you can run
   `make filename.svg` to open it directly in Inkscape. Bash tab-completion
   works because each file becomes its own Make target. Optional `ARGS=...`
