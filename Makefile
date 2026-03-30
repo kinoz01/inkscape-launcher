@@ -9,8 +9,12 @@ ARGS ?=
 RUN_DIR := $(CURDIR)/run
 RUN_FILES := $(filter-out %/,$(wildcard $(RUN_DIR)/*))
 RUN_TARGETS := $(notdir $(RUN_FILES))
+APPLICATIONS_DIR ?= $(HOME)/.local/share/applications
+DESKTOP_TEMPLATE := $(CURDIR)/org.inkscape.Inkscape.desktop
+DESKTOP_INSTALL_PATH ?= $(APPLICATIONS_DIR)/inkscape-appimage.desktop
+ICON_FILE := $(CURDIR)/org.inkscape.Inkscape.png
 
-.PHONY: install-fonts inkscape fonts $(RUN_TARGETS)
+.PHONY: install-fonts inkscape fonts install $(RUN_TARGETS)
 
 inkscape:
 	@if [ ! -x "$(INKSCAPE_APP)" ]; then \
@@ -79,9 +83,45 @@ fonts:
 			fi; \
 		else \
 			echo "Font cache unchanged (no new fonts installed)."; \
-		fi
+	fi
 	@echo "Fonts installed to $(FONT_INSTALL_DIR)."
 
+install:
+	@if [ ! -x "$(INKSCAPE_APP)" ]; then \
+		echo "Cannot execute '$(INKSCAPE_APP)'. Make sure the AppImage is present and executable."; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(DESKTOP_TEMPLATE)" ]; then \
+		echo "Desktop entry template '$(DESKTOP_TEMPLATE)' not found."; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(ICON_FILE)" ]; then \
+		echo "Icon file '$(ICON_FILE)' not found."; \
+		exit 1; \
+	fi
+	@mkdir -p "$(APPLICATIONS_DIR)"
+	@set -e; \
+	tmp_file="$$(mktemp)"; \
+	if ! sed \
+		-e 's|^Exec=inkscape %F|Exec=$(INKSCAPE_APP) %F|' \
+		-e 's|^Exec=inkscape$$|Exec=$(INKSCAPE_APP)|' \
+		-e 's|^TryExec=inkscape|TryExec=$(INKSCAPE_APP)|' \
+		-e 's|^Icon=org\.inkscape\.Inkscape|Icon=$(ICON_FILE)|' \
+		"$(DESKTOP_TEMPLATE)" > "$$tmp_file"; then \
+		rm -f "$$tmp_file"; \
+		exit 1; \
+	fi; \
+	install -m 644 "$$tmp_file" "$(DESKTOP_INSTALL_PATH)"; \
+	rm -f "$$tmp_file"
+	@echo "Desktop file installed to $(DESKTOP_INSTALL_PATH)."
+	@if command -v update-desktop-database >/dev/null 2>&1; then \
+		echo "Refreshing desktop database..."; \
+		update-desktop-database "$(APPLICATIONS_DIR)" >/dev/null && \
+		echo "Desktop database refreshed."; \
+	else \
+		echo "update-desktop-database not found; please refresh desktop entries manually if needed."; \
+	fi
+	@echo "Inkscape AppImage is now available in file manager 'Open With' menus."
 
 .PHONY: run-list
 run-list:
